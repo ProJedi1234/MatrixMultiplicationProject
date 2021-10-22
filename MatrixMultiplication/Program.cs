@@ -8,13 +8,14 @@ namespace MatrixMultiplication
         {
             Console.WriteLine("Which system would you like to run?");
             Console.WriteLine("0 - Basic, 1 - Divide and Conquer");
+            Console.Write("Choice: ");
             var response = int.Parse(Console.ReadLine());
 
             for (int exp = 0; exp < 20; exp++)
             {
                 var size = (int)Math.Pow(2, exp);
 
-                long total = 0;
+                double total = 0;
                 var count = 0;
 
                 for (int i = 0; i < 1000; i++)
@@ -24,11 +25,11 @@ namespace MatrixMultiplication
 
                     for (int j = 0; j < 20; j++)
                     {
-                        int time = 0;
+                        double time = 0;
                         if (response == 0)
-                            BasicMultiplicationTestRun(ar1, ar2);
+                            time = BasicMultiplicationTestRun(ar1, ar2);
                         else if (response == 1)
-                            DivideAndConquer(ar1, ar2);
+                            time = DivideAndConquerTestRun(ar1, ar2);
                         total += time;
                         count++;
                     }
@@ -61,14 +62,14 @@ namespace MatrixMultiplication
             return array;
         }
 
-        static long BasicMultiplicationTestRun(int[][] ar1, int[][] ar2)
+        static double BasicMultiplicationTestRun(int[][] ar1, int[][] ar2)
         {
             var watch = new System.Diagnostics.Stopwatch();
             watch.Start();
             BasicMultiplication(ar1, ar2);
             watch.Stop();
 
-            return watch.ElapsedMilliseconds;
+            return watch.Elapsed.TotalMilliseconds;
         }
 
         static int[][] BasicMultiplication(int[][] ar1, int[][] ar2)
@@ -91,14 +92,14 @@ namespace MatrixMultiplication
             return result;
         }
 
-        static long DivideAndConquerTestRun(int[][] ar1, int[][] ar2)
+        static double DivideAndConquerTestRun(int[][] ar1, int[][] ar2)
         {
             var watch = new System.Diagnostics.Stopwatch();
             watch.Start();
             DivideAndConquer(ar1, ar2);
             watch.Stop();
 
-            return watch.ElapsedMilliseconds;
+            return watch.Elapsed.TotalMilliseconds;
         }
 
         static int[][] DivideAndConquer(int[][] ar1, int[][] ar2)
