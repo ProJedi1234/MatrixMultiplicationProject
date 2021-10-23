@@ -6,10 +6,15 @@ namespace MatrixMultiplication
     {
         static void Main(string[] args)
         {
+
             Console.WriteLine("Which system would you like to run?");
             Console.WriteLine("0 - Basic, 1 - Divide and Conquer, 2 - Strassen");
             Console.Write("Choice: ");
             var response = int.Parse(Console.ReadLine());
+            Console.WriteLine("\n\nRun Style");
+            Console.WriteLine("0 - Quick, 1 - Full Test");
+            Console.Write("Choice: ");
+            var runStyle = int.Parse(Console.ReadLine());
 
             for (int exp = 0; exp < 20; exp++)
             {
@@ -18,12 +23,12 @@ namespace MatrixMultiplication
                 double total = 0;
                 var count = 0;
 
-                for (int i = 0; i < 1000; i++)
+                for (int i = 0; i < (runStyle == 1 ? 1000 : 1); i++)
                 {
                     var ar1 = generateArrays(size);
                     var ar2 = generateArrays(size);
 
-                    for (int j = 0; j < 20; j++)
+                    for (int j = 0; j < (runStyle == 1 ? 20 : 1); j++)
                     {
                         double time = 0;
                         if (response == 0)
@@ -87,22 +92,21 @@ namespace MatrixMultiplication
 
         static int[][] DivideAndConquer(int[][] ar1, int[][] ar2)
         {
-            var result = new int[ar1.Length][];
+            var result = InitializeMatrix(ar1.Length);
 
             var newSize = ar1.Length / 2;
 
-            if (newSize == 0)
-                return result;
+            if (newSize <= 1)
+                return BasicMultiplication(ar1, ar2);
 
-            var A11 = new int[newSize][];
-            var A12 = new int[newSize][];
-            var A21 = new int[newSize][];
-            var A22 = new int[newSize][];
-
-            var B11 = new int[newSize][];
-            var B12 = new int[newSize][];
-            var B21 = new int[newSize][];
-            var B22 = new int[newSize][];
+            int[][] A11 = InitializeMatrix(newSize);
+            int[][] A12 = InitializeMatrix(newSize);
+            int[][] A21 = InitializeMatrix(newSize);
+            int[][] A22 = InitializeMatrix(newSize);
+            int[][] B11 = InitializeMatrix(newSize);
+            int[][] B12 = InitializeMatrix(newSize);
+            int[][] B21 = InitializeMatrix(newSize);
+            int[][] B22 = InitializeMatrix(newSize);
 
             for (int i = 0; i < newSize; i++)
             {
@@ -117,49 +121,37 @@ namespace MatrixMultiplication
                 B22[i] = new int[newSize];
             }
 
-            for (int i = 0; i < ar1.Length; i++)
-            {
-                for (int j = 0; j < ar1[i].Length; j++)
+            for (int i = 0; i < newSize; i++)
+                for (int j = 0; j < newSize; j++)
                 {
-                    if (j < newSize)
-                    {
-                        if (i < newSize)
-                        {
-                            //A11
-                            A11[i % newSize][j % newSize] = ar1[i][j];
-                            B11[i % newSize][j % newSize] = ar2[i][j];
-                        }
-                        else
-                        {
-                            //A21
-                            A21[i % newSize][j % newSize] = ar1[i][j];
-                            B21[i % newSize][j % newSize] = ar2[i][j];
-                        }
-                    }
-                    else
-                    {
-                        if (i < newSize)
-                        {
-                            //A12
-                            A12[i % newSize][j % newSize] = ar1[i][j];
-                            B12[i % newSize][j % newSize] = ar2[i][j];
-                        }
-                        else
-                        {
-                            //A22
-                            A22[i % newSize][j % newSize] = ar1[i][j];
-                            B22[i % newSize][j % newSize] = ar2[i][j];
-                        }
-                    }
+                    A11[i][j] = ar1[i][j];
+                    A12[i][j] = ar1[i][newSize + j];
+                    A21[i][j] = ar1[newSize + i][j];
+                    A22[i][j] = ar1[newSize + i][newSize + j];
+                    B11[i][j] = ar2[i][j];
+                    B12[i][j] = ar2[i][newSize + j];
+                    B21[i][j] = ar2[newSize + i][j];
+                    B22[i][j] = ar2[newSize + i][newSize + j];
                 }
-            }
 
-            var C11 = AddMatricies(BasicMultiplication(A11, B11), BasicMultiplication(A12, B21));
-            var C12 = AddMatricies(BasicMultiplication(A11, B12), BasicMultiplication(A12, B22));
-            var C21 = AddMatricies(BasicMultiplication(A21, B11), BasicMultiplication(A22, B21));
-            var C22 = AddMatricies(BasicMultiplication(A21, B12), BasicMultiplication(A22, B22));
+            //var C11 = AddMatricies(BasicMultiplication(A11, B11), BasicMultiplication(A12, B21));
+            //var C12 = AddMatricies(BasicMultiplication(A11, B12), BasicMultiplication(A12, B22));
+            //var C21 = AddMatricies(BasicMultiplication(A21, B11), BasicMultiplication(A22, B21));
+            //var C22 = AddMatricies(BasicMultiplication(A21, B12), BasicMultiplication(A22, B22));
 
-            //won't combine the matricies since that takes unncessarily computational time that takes away from the main point of the algorithm
+            var C11 = AddMatricies(DivideAndConquer(A11, B11), DivideAndConquer(A12, B21));
+            var C12 = AddMatricies(DivideAndConquer(A11, B12), DivideAndConquer(A12, B22));
+            var C21 = AddMatricies(DivideAndConquer(A21, B11), DivideAndConquer(A22, B21));
+            var C22 = AddMatricies(DivideAndConquer(A21, B12), DivideAndConquer(A22, B22));
+
+            for (int i = 0; i < newSize; i++)
+                for (int j = 0; j < newSize; j++)
+                {
+                    result[i][j] = C11[i][j];
+                    result[i][j + newSize] = C12[i][j];
+                    result[newSize + i][j] = C21[i][j];
+                    result[newSize + i][newSize + j] = C22[i][j];
+                }
 
             return result;
         }
@@ -177,11 +169,13 @@ namespace MatrixMultiplication
 
         static int[][] Strassen(int[][] A, int[][] B)
         {
-            if (A.Length == 1)
+            if (A.Length <= 2)
             {
-                int[][] result = InitializeMatrix(1);
-                result[0][0] = A[0][0] * B[0][0];
-                return result;
+                //int[][] result = InitializeMatrix(1);
+                //result[0][0] = A[0][0] * B[0][0];
+                //return result;
+
+                return BasicMultiplication(A, B);
             }
 
 
